@@ -50,11 +50,8 @@ df.model <- df %>%
          tem1.isolate.scaled = ifelse(tem1.isolate>1, TRUE, FALSE)) %>%
   mutate(tem1.isolate.scaled = as.factor(tem1.isolate.scaled)) %>%
   filter(contig.type=="chromosome") %>%
-  group_by(ampc.promoter.snv) %>%
-  mutate(ampc.promoter.snv.n = n()) %>%
-  filter(ampc.promoter.snv.n >= 10) %>%
   ungroup() %>%
-  select(isolate.id, isolate.assembly, coamox.mic, tem1.isolate.scaled, tem1.isolate.copy.number.scaled, ampc.promoter.snv) %>%
+  select(isolate.id, isolate.assembly, coamox.mic, tem1.isolate.scaled, tem1.isolate.copy.number.scaled) %>%
   mutate(coamox.mic = factor(coamox.mic, ordered = TRUE, levels = c("<=2.2", "4.2", "8.2",
                                                                     "16.2", "32.2", ">32.2"))) 
 
@@ -122,7 +119,7 @@ chain.1 <- MCMCglmm(coamox.mic ~ tem1.isolate.copy.number.scaled + tem1.isolate.
                     nitt=10000000,
                     burnin=1000000,
                     thin=100,
-                    DIC=TRUE,
+                    DIC=FALSE,
                     trunc=TRUE,
                     pr=TRUE)
 
@@ -139,15 +136,15 @@ chain.2 <- MCMCglmm(coamox.mic ~ tem1.isolate.copy.number.scaled + tem1.isolate.
                     nitt=10000000,
                     burnin=1000000,
                     thin=100,
-                    DIC=TRUE,
+                    DIC=FALSE,
                     trunc=TRUE,
                     pr=TRUE)
 
 #save.image("~/Desktop/mic.RData")
 
 summary(chain.1)
-plot(chain.1)
 autocorr.diag(chain.1$VCV) 
+plot(chain.1)
 
 summary(chain.2)
 autocorr.diag(chain.2$VCV) 
@@ -199,6 +196,9 @@ phylo.effects <- as.data.frame(phylo.effects)
 phylo.effects.long <- pivot_longer(phylo.effects, cols = everything(), names_to = "tip", values_to = "value")
 phylo.effects.long$tip <- gsub("phylo.", "", phylo.effects.long$tip)
 phylo.effects.long$tip <- factor(phylo.effects.long$tip, levels = get_taxa_name(p))
+
+#write.csv(phylo.effects.long, '~/Desktop/mic-full-effects.csv')
+
 phylo.effects.long <- phylo.effects.long %>%
   group_by(tip) %>%
   mutate(value = value) %>%
@@ -231,36 +231,6 @@ library(cowplot)
 plot_grid(p, NULL, p.2, align='hv', 
           rel_widths = c(1, 0, 0.6), nrow=1,
           labels=c("a", "b"))
-
-
-####
-
-
-phylo.effects <- model$Sol[, grep("phylo", colnames(model$Sol))]
-phylo.effects <- as.data.frame(phylo.effects)
-phylo.effects.long <- pivot_longer(phylo.effects, cols = everything(), names_to = "tip", values_to = "value")
-
-anova_result <- aov(value ~ tip, data = phylo.effects.long)
-summary(anova_result)
-
-tukey_result <- TukeyHSD(anova_result)
-print(tukey_result)
-tukey.df <- as.data.frame(tukey_result$tip)
-tukey.df$sig <- ifelse(tukey.df$`p adj` <0.001, TRUE, FALSE)
-summary(tukey.df$sig)
-
-### 
-
-effects_mic <- read_csv("~/Desktop/effects_mic.csv")
-effects_exp <- read_csv("~/Desktop/effects_exp.csv")
-
-effects_mic <- effects_mic[c("tip", "mean")]
-colnames(effects_mic) <- c("tip", "mic.mean")
-
-effects_exp <- effects_exp[c("tip", "mean")]
-colnames(effects_exp) <- c("tip", "exp.mean")
-
-df.comp <- merge(effects_exp, effects_mic, by="tip", all.x=TRUE)
 
 
 
