@@ -2,20 +2,19 @@
 
 Contained within the scripts directory is the code required to reproduce the analysis from the manuscript:
 
-Name	Last commit message	Last commit date
 | Name       | Description | Notes |
 |------------------|----------|----------|
-| annotate.sh      |          |          |
-| buildResults.R   |          |          |
-| copyNumber.sh    |          |          |
+| annotate.sh      | Runs a suite of genome annotation tools.         | Formatted to be run a Slurm scheduler. |
+| buildResults.R   | Reproduces all stistics and figures reported in the manuscript.         |          |
+| copyNumber.sh    |          | Formatted to be run a Slurm scheduler.         |
 | extractGene.py   |          |          |
 | modelCombined.R  |          |          |
 | modelExpression.R|          |          |
 | modelMIC.R       |          |          |
 | readQC.sh        |          |          |
 | removeGene.py    |          |          |
-| runFlye.sh       |          |          |
-| runIQTREE.sh     |          |          |
-| runPanaroo.sh    |          |          |
-| runUnicycler.sh  |          |          |
-| screenPlsdb.sh   |          |          |
+| runFlye.sh       |          | Formatted to be run a Slurm scheduler.         |
+| runIQTREE.sh     |          | Formatted to be run a Slurm scheduler.         |
+| runPanaroo.sh    |          | Formatted to be run a Slurm scheduler.         |
+| runUnicycler.sh  |          |  Formatted to be run a Slurm scheduler.        |
+| screenPlsdb.sh   |          |  Formatted to be run a Slurm scheduler.        |
