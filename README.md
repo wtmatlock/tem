@@ -12,9 +12,9 @@ Contained within the scripts directory is the code required to reproduce the ana
 | modelExpression.R| Runs the expression model.         |          |
 | modelMIC.R       | Runs the MIC model.         |          |
 | readQC.sh        | Quality control for the short- and long-reads.         |          |
-| removeGene.py    | Removes a gene from a contig as a new FASTA file.          |          |
+| removeGene.py    | Removes a gene from a contig as a new FASTA file.          | Helper script.          |
 | runFlye.sh       | Runs Flye to assemble a genome from short- and long-reads.         | Formatted to be run on a Slurm scheduler.         |
 | runIQTREE.sh     | Runs IQ-TREE on a set of assemblies.          | Formatted to be run on a Slurm scheduler.         |
 | runPanaroo.sh    | Runs Panaroo on a set of assemblies.         | Formatted to be run on a Slurm scheduler.         |
 | runUnicycler.sh  | Runs Unicycler to assemble a genome from short- and long-reads.           |  Formatted to be run on a Slurm scheduler.        |
-| screenPlsdb.sh   |          |  Formatted to be run on a Slurm scheduler.        |
+| screenPlsdb.sh   | Finds the PLSDB plasmid sequence which best contains a query contig based on *k*-mers.        |  Formatted to be run on a Slurm scheduler.        |
