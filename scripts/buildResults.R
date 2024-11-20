@@ -16,20 +16,21 @@ library(clevr)
 library(cowplot)
 library(ggtext)
 
-setwd('/Users/willmatlock/Desktop/tem1_2024')
+###
+### read in data
+###
 
-# Main metadata file
-df <- read_delim("metadata/metadata.tsv", 
-                 delim = "\t", escape_double = FALSE, 
+setwd("~/Desktop/tem-main/")
+
+df <- read_delim("./data/supplementary_table_1.tsv", 
+                 delim = "\t", escape_double = FALSE,
                  trim_ws = TRUE)
-# Efflux annotations
-efflux <- read_delim("metadata/amrfinder_report.tsv", 
-                     delim = "\t", escape_double = FALSE, 
-                     trim_ws = TRUE)
-# blaTEM-1 and linked promoter annotations
-tem1.report <- read_delim("metadata/tem1_report_final.csv", 
+tem1.report <- read_delim("./data/supplementary_table_2.tsv", 
                           delim = "\t", escape_double = FALSE, 
                           trim_ws = TRUE)
+efflux <- read_delim("./data/amrfinder_report.tsv", 
+                     delim = "\t", escape_double = FALSE, 
+                     trim_ws = TRUE)
 
 ###
 ### A curated sample of E. coli isolates with hybrid assemblies and co-amoxiclav MICs
