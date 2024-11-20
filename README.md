@@ -7,7 +7,7 @@ Contained within the scripts directory is the code required to reproduce the ana
 | Name       | Description | Notes |
 |------------------|----------|----------|
 | `annotate.sh`      | Runs a suite of genome annotation tools.         | Formatted to be run on a Slurm scheduler. |
-| `buildResults.R`   | Reproduces all figure and sample statistics reported in the manuscript.         |          |
+| `buildResults.R`   | Reproduces all figure and sample statistics reported in the manuscript.         | Set the working directory to that containing `data`.         |
 | `copyNumber.sh`    | Estimates the copy number of assembly contigs.        | Formatted to be run on a Slurm scheduler.         |
 | `extractGene.py`   | Extracts a gene from a contig as a new FASTA file.         | Helper script.         | 
 | `modelCombined.R`  | Runs the combined expression and MIC model.          |          |
