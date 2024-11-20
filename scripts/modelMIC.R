@@ -14,10 +14,10 @@ library(stringr)
 
 ### read in data
 
-df <- read_delim("~/Desktop/tem1_2024/metadata/metadata.tsv", 
+df <- read_delim("./data/supplementary_table_1.tsv", 
                  delim = "\t", escape_double = FALSE,
                  trim_ws = TRUE)
-tem1.report <- read_delim("~/Desktop/tem1_2024/metadata/tem1_report.csv", 
+tem1.report <- read_delim("./data/supplementary_table_2.tsv", 
                           delim = "\t", escape_double = FALSE, 
                           trim_ws = TRUE)
 efflux <- read_delim("~/Desktop/tem1_2024/metadata/amrfinder_report.tsv", 
