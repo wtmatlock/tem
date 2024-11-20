@@ -33,4 +33,4 @@ Contained within the scripts directory is the code required to reproduce the ana
 
 ### Running the models
 
-The files provided within the data directory are used by the modelling scripts (`modelExpression.R`, `modelMIC.R`, and `modelCombined.R`).
+The files provided within the data directory are used by the modelling scripts (`modelExpression.R`, `modelMIC.R`, and `modelCombined.R`). Make sure you set the appropriate working directory.
