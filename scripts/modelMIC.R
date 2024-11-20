@@ -20,10 +20,10 @@ df <- read_delim("./data/supplementary_table_1.tsv",
 tem1.report <- read_delim("./data/supplementary_table_2.tsv", 
                           delim = "\t", escape_double = FALSE, 
                           trim_ws = TRUE)
-efflux <- read_delim("~/Desktop/tem1_2024/metadata/amrfinder_report.tsv", 
+efflux <- read_delim("./data/amrfinder_report.tsv", 
                      delim = "\t", escape_double = FALSE, 
                      trim_ws = TRUE)
-phylo <- read.tree("/Users/willmatlock/Desktop/tem1_2024/tree_support/ml.tree.txt")
+phylo <- read.tree("data/ml_tree.txt")
 
 ### prepare phylogeny
 
