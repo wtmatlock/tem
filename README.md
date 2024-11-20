@@ -21,6 +21,16 @@ Contained within the scripts directory is the code required to reproduce the ana
 | `runUnicycler.sh`  | Runs Unicycler to assemble a genome from short- and long-reads.           |  Formatted to be run on a Slurm scheduler.        |
 | `screenPlsdb.sh`   | Finds the PLSDB plasmid sequence which best contains a query contig based on *k*-mers.        |  Formatted to be run on a Slurm scheduler.        |
 
+### Data
+
+| Name       | Description | Notes |
+|------------------|----------|----------|
+| `amrfinder_report.tsv`      | Output from NCBIAMRFinder.         | Gene hits are also included as a column in `supplementary_table_1.tsv`. |
+| `ml_tree.txt`   | *E. coli* core gene phylogeny in NEWICK format.         |         |
+| `supplementary_table_1.tsv`    | Study metadata.       |        |
+| `supplementary_table_2.tsv`   | Annotation data for *bla*<sub>TEM-1</sub> and linked promoters.      |     | 
+| `supplementary_table_3.xlsx`  | Expression data for *bla*<sub>TEM-1</sub>.        |          |
+
 ### Running the models
 
 The files provided within the data directory are used by the modelling scripts (`modelExpression.R`, `modelMIC.R`, and `modelCombined.R`).
