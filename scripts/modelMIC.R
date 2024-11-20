@@ -51,7 +51,7 @@ df.model <- df %>%
   mutate(tem1.isolate.scaled = as.factor(tem1.isolate.scaled)) %>%
   filter(contig.type=="chromosome") %>%
   ungroup() %>%
-  select(isolate.id, isolate.assembly, coamox.mic, tem1.isolate.scaled, tem1.isolate.copy.number.scaled) %>%
+  select(isolate.id, isolate.assembly, coamox.mic, tem1.isolate.scaled, tem1.isolate.copy.number.scaled, ampc.promoter.snv) %>%
   mutate(coamox.mic = factor(coamox.mic, ordered = TRUE, levels = c("<=2.2", "4.2", "8.2",
                                                                     "16.2", "32.2", ">32.2"))) 
 
