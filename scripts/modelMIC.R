@@ -14,6 +14,8 @@ library(stringr)
 
 ### read in data
 
+setwd("~/Desktop/tem-main/")
+
 df <- read_delim("./data/supplementary_table_1.tsv", 
                  delim = "\t", escape_double = FALSE,
                  trim_ws = TRUE)
@@ -23,7 +25,7 @@ tem1.report <- read_delim("./data/supplementary_table_2.tsv",
 efflux <- read_delim("./data/amrfinder_report.tsv", 
                      delim = "\t", escape_double = FALSE, 
                      trim_ws = TRUE)
-phylo <- read.tree("data/ml_tree.txt")
+phylo <- read.tree("./data/ml_tree.txt")
 
 ### prepare phylogeny
 
