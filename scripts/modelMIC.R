@@ -89,11 +89,8 @@ df.model$acrf <- ifelse(df.model$isolate.assembly %in% df.efflux$isolate.assembl
 df.model$acrf <- as.factor(df.model$acrf)
 
 summary(as.factor(df.model$ampc.promoter.snv))
-df.model <- df.model[df.model$ampc.promoter.snv!="GGCTCTGTGAG",]
 
-df.model$ampc.promoter.snv = factor(df.model$ampc.promoter.snv, ordered = FALSE, 
-                                    levels = c("GGCTCCTAGGG", "AGCTTCTAGGG", "AGCTCCTAGGG",
-                                               "GATTCCTAGGG"))
+df.model$ampc.promoter.snv = factor(df.model$ampc.promoter.snv, ordered = FALSE)
 
 summary(as.factor(df.model$promoter.snv))
 df.model$promoter.snv = factor(df.model$promoter.snv, ordered = FALSE, 
