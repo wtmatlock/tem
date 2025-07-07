@@ -14,19 +14,16 @@ library(readxl)
 
 ### read in data
 
-setwd("~/Desktop/tem-main/")
-
-df <- read_delim("./data/supplementary_table_1.tsv", 
+df <- read_delim("/Users/willmatlock/Desktop/reviews/revision/supplementary/supplementary_table_1.tsv", 
                  delim = "\t", escape_double = FALSE,
                  trim_ws = TRUE)
-tem1.report <- read_delim("./data/supplementary_table_2.tsv", 
+tem1.report <- read_delim("/Users/willmatlock/Desktop/reviews/revision/supplementary/supplementary_table_2.csv", 
                           delim = "\t", escape_double = FALSE, 
                           trim_ws = TRUE)
-efflux <- read_delim("./data/amrfinder_report.tsv", 
-                     delim = "\t", escape_double = FALSE, 
-                     trim_ws = TRUE)
-phylo <- read.tree("./data/ml_tree.txt")
-exp <- read_excel("./data/supplementary_table_3.xlsx")
+
+phylo <- read.tree("/Users/willmatlock/Desktop/reviews/revision/data/GTR_F_I_R4.treefile")
+
+exp <- read_excel("/Users/willmatlock/Desktop/reviews/revision/supplementary/supplementary_table_3.xlsx")
 
 ### prepare MIC data
 

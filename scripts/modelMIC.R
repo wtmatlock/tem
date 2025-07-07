@@ -14,18 +14,15 @@ library(stringr)
 
 ### read in data
 
-setwd("~/Desktop/tem-main/")
-
-df <- read_delim("./data/supplementary_table_1.tsv", 
-                 delim = "\t", escape_double = FALSE,
+# Main metadata file
+df <- read_delim("/Users/willmatlock/Desktop/reviews/revision_2/supplementary/supplementary_table_1.tsv", 
+                 delim = "\t", escape_double = FALSE, 
                  trim_ws = TRUE)
-tem1.report <- read_delim("./data/supplementary_table_2.tsv", 
+# blaTEM-1 and linked promoter annotations
+tem1.report <- read_delim("/Users/willmatlock/Desktop/reviews/revision_2/supplementary/supplementary_table_2.csv", 
                           delim = "\t", escape_double = FALSE, 
                           trim_ws = TRUE)
-efflux <- read_delim("./data/amrfinder_report.tsv", 
-                     delim = "\t", escape_double = FALSE, 
-                     trim_ws = TRUE)
-phylo <- read.tree("./data/ml_tree.txt")
+phylo <- read.tree("/Users/willmatlock/Desktop/reviews/revision_2/data/GTR_F_I_R4.treefile")
 
 ### prepare phylogeny
 
@@ -78,26 +75,19 @@ tem1.model <- tem1.report %>%
 df.model <- merge(df.model, tem1.model, by="isolate.assembly", all.x=TRUE) %>%
   filter(!is.na(promoter.snv)) 
 
-df.efflux <- efflux %>%
-  filter(Class=="EFFLUX" & `Gene symbol`=="acrF") %>%
-  mutate(cov = as.numeric(`% Coverage of reference sequence`),
-         id = as.numeric(`% Identity to reference sequence`)) %>%
-  filter(cov >=95 & id >=95) %>%
-  select(`1`, cov, id) %>%
-  filter(`1` %in% unique(df$isolate.assembly))
-colnames(df.efflux) <- "isolate.assembly"
-
-df.model$acrf <- ifelse(df.model$isolate.assembly %in% df.efflux$isolate.assembly, TRUE, FALSE)
-df.model$acrf <- as.factor(df.model$acrf)
-
-summary(as.factor(df.model$ampc.promoter.snv))
-
-df.model$ampc.promoter.snv = factor(df.model$ampc.promoter.snv, ordered = FALSE)
+df.model <- df.model %>%
+  group_by(ampc.promoter.snv) %>%
+  filter(n()>=10)
 
 summary(as.factor(df.model$promoter.snv))
 df.model$promoter.snv = factor(df.model$promoter.snv, ordered = FALSE, 
-                                    levels = c("CGGCGG", "CGGCGA", "TGGCGA",
-                                               "TGGCGG"))
+                               levels = c("CGGCGG", "CGGCGA", "TGGCGA",
+                                          "TGGCGG"))
+
+summary(as.factor(df.model$ampc.promoter.snv))
+df.model$ampc.promoter.snv = factor(df.model$ampc.promoter.snv, ordered = FALSE, 
+                               levels = c("GGCTCCTAGGG", "AGCTTCTAGGG", "AGCTCCTAGGG",
+                                          "GATTCCTAGGG"))
 
 df.model <- as.data.frame(df.model)
 df.model$phylo <- as.factor(df.model$isolate.assembly)
@@ -109,7 +99,7 @@ prior <- list(G=list(G1=list(V=1,nu=0.02, alpha.mu = 0, alpha.V = 1e+3)),
 
 set.seed(1)
 chain.1 <- MCMCglmm(coamox.mic ~ tem1.isolate.copy.number.scaled + tem1.isolate.scaled + 
-                      ampc.promoter.snv + promoter.snv + acrf,
+                      ampc.promoter.snv + promoter.snv,
                     random=~phylo,
                     family="ordinal",
                     ginverse=list(phylo=inv.phylo$Ainv),
@@ -122,11 +112,11 @@ chain.1 <- MCMCglmm(coamox.mic ~ tem1.isolate.copy.number.scaled + tem1.isolate.
                     trunc=TRUE,
                     pr=TRUE)
 
-#save.image("~/Desktop/mic.RData")
+#save.image("~/Desktop/mic_rev.RData")
 
 set.seed(2)
 chain.2 <- MCMCglmm(coamox.mic ~ tem1.isolate.copy.number.scaled + tem1.isolate.scaled + 
-                      ampc.promoter.snv + promoter.snv + acrf,
+                      ampc.promoter.snv + promoter.snv,
                     random=~phylo,
                     family="ordinal",
                     ginverse=list(phylo=inv.phylo$Ainv),
@@ -139,7 +129,7 @@ chain.2 <- MCMCglmm(coamox.mic ~ tem1.isolate.copy.number.scaled + tem1.isolate.
                     trunc=TRUE,
                     pr=TRUE)
 
-#save.image("~/Desktop/mic.RData")
+#save.image("~/Desktop/mic_rev_2.RData")
 
 summary(chain.1)
 autocorr.diag(chain.1$VCV) 
@@ -196,7 +186,7 @@ phylo.effects.long <- pivot_longer(phylo.effects, cols = everything(), names_to 
 phylo.effects.long$tip <- gsub("phylo.", "", phylo.effects.long$tip)
 phylo.effects.long$tip <- factor(phylo.effects.long$tip, levels = get_taxa_name(p))
 
-#write.csv(phylo.effects.long, '~/Desktop/mic-full-effects.csv')
+write.csv(phylo.effects.long, '~/Desktop/mic-full-effects_rev.csv')
 
 phylo.effects.long <- phylo.effects.long %>%
   group_by(tip) %>%
@@ -207,7 +197,7 @@ phylo.effects.long <- phylo.effects.long %>%
   distinct()
 phylo.effects.long <- cbind(phylo.effects.long, phylo.effects.long$hpd)
 
-#write.csv(phylo.effects.long, '~/Desktop/mic-effects.csv')
+write.csv(phylo.effects.long, '~/Desktop/mic-effects_rev.csv')
 
 p.2 <- ggplot(phylo.effects.long, aes(x = tip, y = mean)) +
   geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=0) +
@@ -231,5 +221,135 @@ plot_grid(p, NULL, p.2, align='hv',
           rel_widths = c(1, 0, 0.6), nrow=1,
           labels=c("a", "b"))
 
+###
+### additional analysis for tip effect in terms of MIC category ###
+###   
 
+# latent cutpoint for 4/2 is 1.222
+# latent cutpoint for 
 
+tips <- as.character(df.model$phylo)
+
+cutpoint_samples <- as.data.frame(model$CP)
+phylo_samples <- as.data.frame(model$Sol[,-(1:9)])
+colnames(phylo_samples) <- gsub("phylo.", "", colnames(phylo_samples))
+phylo_samples <- phylo_samples %>% select(any_of(tips))
+data <- cbind(cutpoint_samples, phylo_samples)
+
+cp2 <- "cutpoint.traitcoamox.mic.2" 
+cp3 <- "cutpoint.traitcoamox.mic.3" 
+
+midpoint <- (data[[cp3]]+data[[cp2]])/2
+
+p_up <- sapply(tips, function(col) mean(data[[col]] + midpoint > data[[cp3]]))
+
+results <- data.frame(
+  tip     = tips,
+  p_up    = p_up,
+  stringsAsFactors = FALSE
+)
+
+sum(results$p_up > 0.5)
+
+plot(density(results$p_up))
+
+df_to_merge <- df %>%
+  filter(contig.type == "chromosome") %>%
+  select(isolate.assembly, ezclermont.phylogroup, mlst.st)
+
+results <- merge(results, df_to_merge, by.x="tip", by.y="isolate.assembly", all.x=TRUE)
+
+isolates <- results %>%
+  filter(p_up > 0.5) %>%
+  pull(tip)
+
+phylogroup_up <- df %>%
+  filter(contig.type == "chromosome") %>%
+  filter(isolate.assembly %in% isolates) %>%
+  group_by(ezclermont.phylogroup) %>%
+  summarise(n=n())
+
+phylogroup_up
+
+mlst_up <- df %>%
+  filter(contig.type == "chromosome") %>%
+  filter(isolate.assembly %in% isolates) %>%
+  group_by(mlst.st) %>%
+  summarise(n=n())
+
+mlst_up
+
+plot_df <- results %>%
+  mutate(perc_50 = ifelse(p_up > 0.5, TRUE, FALSE),
+         perc_60 = ifelse(p_up > 0.6, TRUE, FALSE),
+         perc_70 = ifelse(p_up > 0.7, TRUE, FALSE))
+
+to_merge <- df %>%
+  filter(contig.type=="chromosome") %>%
+  filter(isolate.assembly %in% df.model$isolate.assembly) %>%
+  select(isolate.assembly, mlst.st)
+
+plot_df <- merge(plot_df, to_merge, by.x='tip', by.y='isolate.assembly', all.x=TRUE)
+
+plot_df_long <- plot_df %>% 
+  pivot_longer(
+    cols      = starts_with("perc_"),
+    names_to  = "perc",
+    values_to = "flag"
+  ) %>% 
+  filter(flag)
+
+plot_mlsts <- plot_df_long %>% 
+  filter(mlst.st != "-") %>% 
+  count(mlst.st) %>% 
+  filter(n >= 10) %>% 
+  pull(mlst.st)
+
+plot_df_long <- plot_df_long %>% 
+  mutate(
+    mlst_group = if_else(mlst.st %in% plot_mlsts,
+                         as.character(mlst.st),
+                         "Other")
+  )
+
+df_count <- plot_df_long %>% 
+  count(perc, mlst_group)
+
+perc_labels <- c(
+  perc_50 = "50",
+  perc_60 = "60",
+  perc_70 = "70"
+)
+
+my_cols <- c(
+  "Other" = "grey70",
+  "127"   = "#FE6100",
+  "69"    = "#FFB000",
+  "12"  = "#DC267F"
+)
+
+ggplot(df_count, aes(x = perc, y = n, fill = mlst_group)) +
+  geom_col() +
+  scale_x_discrete(
+    labels = perc_labels
+  ) +
+  scale_fill_manual(
+    values = my_cols,
+    na.value = "black",      # in case there are any unexpected levels
+    guide    = guide_legend(title = "MLST")
+  ) +
+  labs(
+    x = "Percent threshold",
+    y = "Number of isolates"
+  ) +
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        text = element_text(size=20, color='black'),
+        panel.border = element_rect(color = "black", fill = NA, size = 2),
+        strip.background = element_rect(fill="black"),
+        strip.text = element_text(color="white"), 
+        axis.ticks = element_line(size = 1, color='black'),
+        axis.text.x = element_text(color='black'),
+        axis.text.y = element_text(color='black'),
+        axis.title.x = element_markdown(),
+        axis.title.y = element_markdown())

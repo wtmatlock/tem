@@ -11,22 +11,19 @@ library(tidyr)
 library(parameters)
 library(coda)
 library(readxl)
+library(forcats)
 
 ### read in data
 
-setwd("~/Desktop/tem-main/")
-
-df <- read_delim("./data/supplementary_table_1.tsv", 
+df <- read_delim("~/Desktop/ecoli548/metadata/metadata.tsv", 
                  delim = "\t", escape_double = FALSE,
                  trim_ws = TRUE)
-tem1.report <- read_delim("./data/supplementary_table_2.tsv", 
+tem1.report <- read_delim("~/Desktop/ecoli548/metadata/tem1_report.csv", 
                           delim = "\t", escape_double = FALSE, 
                           trim_ws = TRUE)
-efflux <- read_delim("./data/amrfinder_report.tsv", 
-                     delim = "\t", escape_double = FALSE, 
-                     trim_ws = TRUE)
-phylo <- read.tree("./data/ml_tree.txt")
-exp <- read_excel("./data/supplementary_table_3.xlsx")
+phylo <- read.tree("/Users/willmatlock/Desktop/GTR_F_I_R4.treefile")
+exp <- read_excel("~/Desktop/ecoli548/delta_CtTEM_Ct16S.xlsx")
+
 
 ### prepare phylogeny
 
@@ -186,28 +183,27 @@ colnames(df.plot.phylo) <- c("tip.label", "id", "phylogroup", "mlst.st", "contig
 df.plot.phylo$tip.label <- as.character(df.plot.phylo$tip.label)
 
 df.plot.phylo$ST <- ifelse(df.plot.phylo$mlst.st=="12", "12",
-                           ifelse(df.plot.phylo$mlst.st=="372", "372",
-                           "Other"))
+                           ifelse(df.plot.phylo$mlst.st=="127", "127",
+                                  ifelse(df.plot.phylo$mlst.st=="69", "69",
+                           "Other")))
 df.plot.phylo$Replicon <- ifelse(df.plot.phylo$contig.type=="chromosome", "Chromosome",
                            ifelse(df.plot.phylo$contig.type=="plasmid", "Plasmid", NA))
 
 p <- ggtree(phylo.plot) +
   geom_treescale(x=0, y=40, width=0.01)
 
+
 p <- p %<+% df.plot.phylo + 
   geom_tiplab(align=TRUE,aes(label=id), offset=0.002) +
   geom_tippoint(aes(fill = phylogroup, colour=ST, shape=Replicon), size = 3, stroke = 1) +
   scale_fill_brewer(palette = "Set3", name="Phylogroup") +
-  scale_colour_manual(values=c("#1b9e77", "#d95f02", "black")) +
+  scale_colour_manual(values=c("#DC267F", "#FE6100", "#FFB000", "black")) +
   scale_shape_manual(values = c("Chromosome"=21, "Plasmid"=22)) +
   theme(legend.position = NA)
 
 p <- p + theme(legend.position = c(0.1,0.9)) + ggplot2::xlim(0, 0.03)
 
-
 p
-
-
 
 get_taxa_name(p)
 
@@ -246,24 +242,7 @@ p.2 <- ggplot(phylo.effects.long, aes(x = tip, y = -mean)) +
   labs(fill = "Posterior mean") +
   ylab(label="")
 
-library(ggridges)
-
-p.2.alt <- ggplot(phylo.effects.long, aes(x = tip, y = -mean)) +
-  geom_density_ridges(aes(fill = mean)) +
-  scale_fill_gradient2(midpoint = 0, low = "#b2182b", mid = "#f7f7f7", high = "#2166ac") +
-  theme_minimal() +
-  coord_flip() +
-  theme(panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        axis.title.y = element_blank(),  
-        axis.text.y = element_blank(),    
-        axis.ticks.y = element_blank()) +
-  scale_y_continuous(expand = c(0, 0), limits=c(-1, 1)) +
-  scale_x_discrete(limits=rev) +
-  labs(fill = "Posterior mean") +
-  ylab(label="")
-
-mic.phylo.effects <- read_csv("Desktop/tem1_2024/models/mic-effects.csv")
+mic.phylo.effects <- read_csv("/Users/willmatlock/Desktop/reviews/revision_2/data/mic-effects_rev.csv")
 
 mic.phylo.effects <- mic.phylo.effects %>%
   filter(tip %in% phylo.effects.long$tip) %>%
@@ -294,8 +273,46 @@ p.3 <- ggplot(mic.phylo.effects, aes(x = tip, y = mean)) +
 p.2 <- p.2 + theme(legend.position = c(-1,0.9))
 p.3 <- p.3 + theme(legend.position = c(-1,0.9))
 
+ordered_taxa <- get_taxa_name(p)
+
+df.p.4 <- df.model %>%
+  filter(!is.na(exp)) %>%
+  mutate(
+    phylo = factor(phylo, levels = ordered_taxa),
+    isolate.assembly = factor(isolate.assembly, levels = ordered_taxa)  # if needed
+  ) %>%
+  group_by(isolate.assembly, phylo) %>%
+  summarise(mean.exp = mean(exp))
+
+df.p.4 <- merge(df.p.4, df[c("isolate.assembly", "coamox.mic")], by.x="phylo", by.y="isolate.assembly", all.x=TRUE) %>%
+  mutate(phylo = factor(phylo, levels = ordered_taxa)) %>%
+  mutate(coamox.mic = factor(coamox.mic, ordered = TRUE, levels = c("<=2.2", "4.2", "8.2",
+                                                                    "16.2", "32.2", ">32.2"))) %>%
+  distinct()
+
+color_palette <- brewer.pal(n = 6, name = "PuBu") 
+
+p.4 <- ggplot(df.p.4, aes(x = isolate.assembly, y = log(mean.exp, 10), fill=coamox.mic)) +
+  geom_col() +
+  scale_x_discrete(limits = ordered_taxa) +
+  scale_fill_manual(values = color_palette) +
+  theme_minimal() +
+  coord_flip() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.title.y = element_blank(),  
+        axis.text.y = element_blank(),    
+        axis.ticks.y = element_blank()) +
+  scale_x_discrete(limits=rev) +
+  ylab(label="")
+
+p.4
+
+
 
 library(cowplot)
-plot_grid(p, NULL, p.2, NULL ,p.3, align='hv', 
-          rel_widths = c(1, -0.18, 0.6, -0.15, 0.6), nrow=1,
-          labels=c("a", "", "b", "", "c"))
+plot_grid(p, NULL, p.2, NULL ,p.3, NULL, p.4, align='hv', 
+          rel_widths = c(1, -0.18, 0.6, -0.15, -0.1, 0.4), nrow=1,
+          labels=c("a", "", "b", "", "c", "", "d"))
+
+

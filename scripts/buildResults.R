@@ -15,22 +15,19 @@ library(lme4)
 library(clevr)
 library(cowplot)
 library(ggtext)
+library(tidyverse)
 
-###
-### read in data
-###
+#setwd('/Users/willmatlock/Desktop/tem1_2024')
 
-setwd("~/Desktop/tem-main/")
-
-df <- read_delim("./data/supplementary_table_1.tsv", 
-                 delim = "\t", escape_double = FALSE,
+# Main metadata file
+df <- read_delim("/Users/willmatlock/Desktop/reviews/revision/supplementary/supplementary_table_1.tsv", 
+                 delim = "\t", escape_double = FALSE, 
                  trim_ws = TRUE)
-tem1.report <- read_delim("./data/supplementary_table_2.tsv", 
+
+# blaTEM-1 and linked promoter annotations
+tem1.report <- read_delim("/Users/willmatlock/Desktop/reviews/revision/supplementary/supplementary_table_2.csv", 
                           delim = "\t", escape_double = FALSE, 
                           trim_ws = TRUE)
-efflux <- read_delim("./data/amrfinder_report.tsv", 
-                     delim = "\t", escape_double = FALSE, 
-                     trim_ws = TRUE)
 
 ###
 ### A curated sample of E. coli isolates with hybrid assemblies and co-amoxiclav MICs
@@ -76,13 +73,89 @@ sum(df[df$contig.type=="chromosome",]$tem1.replicon)
 # Phylogroup stats
 summary(as.factor(df[df$contig.type=="chromosome",]$ezclermont.phylogroup))
 
+# Plasmid stats
+nrow(df[df$contig.type=="plasmid",])
+nrow(df[df$contig.type=="plasmid" & df$contig.topology=="circular",])
+summary(as.factor(df[df$contig.type=="plasmid" & df$contig.topology=="circular",]$plasmidfinder))
+
 # Promoter stats
 nrow(tem1.report[!is.na(tem1.report$promoter.snv),])
 summary(as.factor(tem1.report$promoter.snv))
 
+###
+### Figure S3 ###
+###
+
+tem1.promoter.df <- tem1.report %>%
+  select(isolate.assembly, promoter.snv) %>%
+  na.omit
+
+df.figS3 <- merge(tem1.promoter.df, df, by="isolate.assembly", all.x=TRUE) %>%
+  filter(contig.type=="chromosome") %>%
+  select(ezclermont.phylogroup, promoter.snv)
+
+color_palette <- brewer.pal(n = 10, name = "Set3") 
+
+
+plot_S3a <- ggplot(df.figS3, aes(x = ezclermont.phylogroup , fill = promoter.snv)) +
+  geom_bar(position = "stack") +
+  scale_fill_manual(values = color_palette) +
+  labs(y = "Combination", x = "", fill = "blaTEM-1 promoter SNV") +
+  labs(title = "Raw counts", x = "Phylogroup", y = "Count") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+df.figS3 <- df.figS3 %>%
+  count(ezclermont.phylogroup, promoter.snv) %>%
+  group_by(ezclermont.phylogroup) %>%
+  mutate(prop = n / sum(n))
+
+plot_S3b <- ggplot(df.figS3, aes(x = ezclermont.phylogroup, y = prop, fill = promoter.snv)) +
+  geom_col(position = "stack") +
+  scale_fill_manual(values = color_palette) +
+  labs(title = "Proportions", x = "Phylogroup", y = "Proportion", fill = "blaTEM-1 promoter SNV") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+plot_grid(plot_S3a, plot_S3b, labels = c("a", "b"), ncol = 2, align = "h")
 
 # MIC stats
 summary(as.factor(df[df$contig.type=="chromosome",]$coamox.mic))
+
+###
+### Figure S4 ###
+###
+
+df.figS4 <- df %>%
+  filter(contig.type=="chromosome") %>%
+  select(ezclermont.phylogroup, coamox.mic)
+
+df.figS4$coamox.mic <- factor(df.figS4$coamox.mic, levels = c("<=2.2", "4.2", "8.2",
+                                                            "16.2", "32.2", ">32.2"))
+
+color_palette <- brewer.pal(n = 6, name = "PuBu") 
+
+plot_S4a <- ggplot(df.figS4, aes(x = ezclermont.phylogroup , fill = coamox.mic)) +
+  geom_bar(position = "stack") +
+  scale_fill_manual(values = color_palette) +
+  labs(y = "Combination", x = "", fill = "Co-amoxiclav MIC") +
+  labs(title = "Raw counts", x = "Phylogroup", y = "Count") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+df.figS4 <- df.figS4 %>%
+  count(ezclermont.phylogroup, coamox.mic) %>%
+  group_by(ezclermont.phylogroup) %>%
+  mutate(prop = n / sum(n))
+
+plot_S4b <- ggplot(df.figS4, aes(x = ezclermont.phylogroup, y = prop, fill = coamox.mic)) +
+  geom_col(position = "stack") +
+  scale_fill_manual(values = color_palette) +
+  labs(title = "Proportions", x = "Phylogroup", y = "Proportion", fill = "Co-amoxiclav MIC") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+plot_grid(plot_S4a, plot_S4b, labels = c("a", "b"), ncol = 2, align = "h")
 
 ###
 ### Plot Figure 1
@@ -252,30 +325,6 @@ df.plasmid.3 <- df.plasmid[df.plasmid$contig.copy.number>=1,]
 summary(df.plasmid.3[df.plasmid.3$contig.length>10000,]$contig.copy.number)
 summary(df.plasmid.3[df.plasmid.3$contig.length<=10000,]$contig.copy.number)
 
-p.fig.s1 <- ggplot(df.plasmid.3, aes(x = contig.copy.number, y = contig.length)) +
-  geom_density_2d(h=NULL, colour='#ef8a62', size=1) +
-  geom_point(alpha=0.5, size=2, stroke=0) +
-  labs(x = "Plasmid copy number (log<sub>10</sub>)",
-       y = "Plasmid length (bp, log<sub>10</sub>)") +
-  theme_minimal() +
-  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
-        text = element_text(size=20, color='black'),
-        panel.border = element_rect(color = "black", fill = NA, size = 2),
-        strip.background = element_rect(fill="black"),
-        strip.text = element_text(color="white"), 
-        axis.ticks = element_line(size = 1, color='black'),
-        axis.text.x = element_text(color='black'),
-        axis.text.y = element_text(color='black'),
-        axis.title.x = element_markdown(),
-        axis.title.y = element_markdown()) +
-  scale_y_continuous(
-    trans = "log10",
-    breaks = 10^seq(4,5),
-    labels = scales::trans_format("log10", scales::math_format(10^.x))) +
-  scale_x_continuous(
-    trans = "log10",
-    breaks = c(0.1, 1, 10),
-    labels = scales::trans_format("log10", scales::math_format(10^.x)))
 
 ###
 ### E. coli phylogeny structures ampC diversity.
@@ -311,36 +360,164 @@ homogeneity(df.ampc$ampc.snv, df.ampc$ampc.promoter.snv)
 completeness(df.ampc$ampc.snv, df.ampc$ampc.promoter.snv)
 
 ###
-### Efflux results
+### Figure S5
 ###
 
-df.efflux <- efflux %>%
-  filter(Class=="EFFLUX") %>%
-  mutate(cov = as.numeric(`% Coverage of reference sequence`),
-         id = as.numeric(`% Identity to reference sequence`)) %>%
-  filter(cov >= 95 & id >=95) %>%
-  select(`1`, `Contig id`, `Gene symbol`, `Sequence name`) %>%
-  filter(`1` %in% unique(df$isolate.assembly))
-colnames(df.efflux) <- c("isolate.assembly", "contig.assembly", "gene", "description")
+library(ape)
+library(phytools)
+library(readxl)
+library(ggtree)
+library(ggheatmap)
 
-df.efflux <- merge(df.efflux, df, by=c("isolate.assembly", "contig.assembly"), all.x=TRUE)
+df <- read_delim("/Users/willmatlock/Desktop/reviews/revision/supplementary/supplementary_table_1.tsv", 
+                 delim = "\t", escape_double = FALSE,
+                 trim_ws = TRUE)
 
-df.efflux %>% 
+phylo <- read.tree("/Users/willmatlock/Desktop/reviews/revision/data/GTR_F_I_R4.treefile")
+
+exp_df <- read_excel("/Users/willmatlock/Desktop/reviews/revision/supplementary/supplementary_table_3.xlsx")
+
+df.plot <- df %>%
+  mutate(tem1.replicon.copy.number = tem1.replicon * contig.copy.number,
+         ) %>%
   group_by(isolate.assembly) %>%
-  summarise(n.efflux = n()) %>%
-  summary()
-  
-df.efflux.acrf <- df.efflux %>%
-  filter(gene=="acrF") %>% 
-  group_by(isolate.assembly) %>%
-  mutate(n.efflux = n())
+  mutate(tem1.cell.copy.number = sum(tem1.replicon.copy.number)) %>%
+  filter(contig.type == "chromosome") %>%
+  select(isolate.assembly, isolate.id, ezclermont.phylogroup, coamox.mic, tem1.isolate, tem1.cell.copy.number, accession)
 
-summary(as.factor(df.efflux.acrf$ezclermont.phylogroup))/nrow(df.efflux.acrf)* 100
-  
-  
-  
-  
-  
-  
-  
-  
+exp.plot <- exp_df
+exp.plot$Isolate <- sapply(strsplit(as.character(exp.plot$Isolate), " "), function(x) x[1])
+exp.plot <- exp.plot[c("Isolate", "delta Ct (control)")]
+colnames(exp.plot) <- c("accession", "exp")
+
+df.plot <- merge(df.plot, exp.plot, by="accession", all.x=TRUE) %>%
+  select(isolate.assembly, isolate.id, ezclermont.phylogroup, tem1.isolate, tem1.cell.copy.number, exp, coamox.mic) %>%
+  as.data.frame() 
+
+phylo <- midpoint.root(phylo)
+phylo$tip.label <- as.character(phylo$tip.label)
+
+p <- ggtree(phylo)
+
+p1 <- p %<+% df.plot + 
+  geom_tippoint(aes(fill = ezclermont.phylogroup), shape = 21, size = 2, stroke = 0.5) +
+  scale_fill_brewer(palette = "Set3", name="Phylogroup") + theme_tree2()
+
+d2 <- df.plot %>%
+  select("label" = isolate.assembly, "value" = tem1.isolate) %>%
+  unique()
+
+p2 <- facet_plot(p1, panel="Genome copies", data=d2, geom=geom_point, mapping = aes(x=value), color="firebrick") + theme_tree2()
+
+d3 <- df.plot %>%
+  select("label" = isolate.assembly, "value" = tem1.cell.copy.number)  %>%
+  unique()
+
+p3 <- facet_plot(p2, panel="Cell copies", data=d3, geom=geom_point, mapping = aes(x=value), color="firebrick") + theme_tree2()
+
+d4 <- df.plot %>%
+  select("label" = isolate.assembly, "value" = exp) %>%
+  group_by(label) %>%
+  summarise(value = mean(value))
+
+p4 <- facet_plot(p3, panel="Mean delta Ct", data=d4, geom=geom_point, mapping = aes(x=value), color="firebrick") + 
+  theme_tree2() + theme(legend.position='bottom') 
+
+p4
+
+d5 <- df.plot %>%
+  select(label = isolate.assembly, value = coamox.mic) %>%
+  mutate(value = factor(value, levels = c("<=2.2", "4.2", "8.2", "16.2", "32.2", ">32.2"))) %>%
+  unique()
+
+tip.order <- phylo$tip.label
+
+p5 <- ggplot(d5, aes(x=value, y=factor(label, levels=tip.order))) +
+  geom_point(color="firebrick") +
+  scale_x_discrete(limits=levels(d5$value), expand=expansion(add=0.5)) +
+  scale_y_discrete(expand=c(0,0)) +
+  labs(x=NULL, y=NULL) +
+  theme_minimal(base_size=11) +
+  theme(
+    axis.title.y   = element_blank(),
+    axis.text.y    = element_blank(),
+    axis.ticks.y   = element_blank(),
+    panel.grid.minor=element_blank(),
+    panel.grid.major=element_blank()
+  ) +   theme_tree2()
+
+
+library(patchwork)
+
+p_final <- p4 + p5 +
+  plot_layout(ncol=2, widths=c(3, 0.7))
+p_final
+
+###
+### Plot Figure S6
+###
+
+plasmid_info <- df %>%
+  filter(contig.topology == "circular", contig.type == "plasmid") %>%
+  select(isolate.id, contig.id, plasmidfinder)
+
+chromosome_info <- df %>%
+  filter(contig.type == "chromosome") %>%
+  select(isolate.id, mlst.st, ezclermont.phylogroup)
+
+df.figS6 <- merge(plasmid_info, chromosome_info, by="isolate.id", all.x=TRUE)
+
+heatmap_phylo <- df.figS6 %>%
+  count(ezclermont.phylogroup, plasmidfinder) %>%
+  ggplot(aes(x = plasmidfinder, y = ezclermont.phylogroup, fill = n)) +
+  geom_tile(color = "black") + 
+  scale_fill_gradient(low = "white", high = "darkred") +
+  labs(x = "Plasmid replicon", y = "Phylogroup", fill = "Count") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, size=5))
+
+heatmap_st <- df.figS6 %>%
+  count(mlst.st, plasmidfinder) %>%
+  ggplot(aes(x = plasmidfinder, y = factor(mlst.st), fill = n)) +
+  geom_tile(color = "black") +  
+  scale_fill_gradient(low = "white", high = "steelblue") +
+  labs(x = NULL, y = "ST", fill = "Count") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+phylogroup.heatmap <- df.figS6 %>%
+  count(ezclermont.phylogroup, plasmidfinder)
+
+(heatmap_st / heatmap_phylo) + plot_layout(heights = c(7.75, 1))
+
+
+
+###
+### Plot Figure S7
+###
+
+
+p.fig.s7 <- ggplot(df.plasmid.3, aes(x = contig.copy.number, y = contig.length)) +
+  geom_density_2d(h=NULL, colour='#ef8a62', size=1) +
+  geom_point(alpha=0.5, size=2, stroke=0) +
+  labs(x = "Plasmid copy number (log<sub>10</sub>)",
+       y = "Plasmid length (bp, log<sub>10</sub>)") +
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        text = element_text(size=20, color='black'),
+        panel.border = element_rect(color = "black", fill = NA, size = 2),
+        strip.background = element_rect(fill="black"),
+        strip.text = element_text(color="white"), 
+        axis.ticks = element_line(size = 1, color='black'),
+        axis.text.x = element_text(color='black'),
+        axis.text.y = element_text(color='black'),
+        axis.title.x = element_markdown(),
+        axis.title.y = element_markdown()) +
+  scale_y_continuous(
+    trans = "log10",
+    breaks = 10^seq(4,5),
+    labels = scales::trans_format("log10", scales::math_format(10^.x))) +
+  scale_x_continuous(
+    trans = "log10",
+    breaks = c(0.1, 1, 10),
+    labels = scales::trans_format("log10", scales::math_format(10^.x)))
