@@ -20,12 +20,12 @@ library(tidyverse)
 #setwd('/Users/willmatlock/Desktop/tem1_2024')
 
 # Main metadata file
-df <- read_delim("/Users/willmatlock/Desktop/reviews/revision/supplementary/supplementary_table_1.tsv", 
+df <- read_delim("path/to/supplementary_table_1.tsv", 
                  delim = "\t", escape_double = FALSE, 
                  trim_ws = TRUE)
 
 # blaTEM-1 and linked promoter annotations
-tem1.report <- read_delim("/Users/willmatlock/Desktop/reviews/revision/supplementary/supplementary_table_2.csv", 
+tem1.report <- read_delim("path/to/supplementary_table_2.csv", 
                           delim = "\t", escape_double = FALSE, 
                           trim_ws = TRUE)
 
@@ -369,13 +369,9 @@ library(readxl)
 library(ggtree)
 library(ggheatmap)
 
-df <- read_delim("/Users/willmatlock/Desktop/reviews/revision/supplementary/supplementary_table_1.tsv", 
-                 delim = "\t", escape_double = FALSE,
-                 trim_ws = TRUE)
+phylo <- read.tree("path/to/GTR_F_I_R4.treefile")
 
-phylo <- read.tree("/Users/willmatlock/Desktop/reviews/revision/data/GTR_F_I_R4.treefile")
-
-exp_df <- read_excel("/Users/willmatlock/Desktop/reviews/revision/supplementary/supplementary_table_3.xlsx")
+exp_df <- read_excel("path/to/supplementary_table_3.xlsx")
 
 df.plot <- df %>%
   mutate(tem1.replicon.copy.number = tem1.replicon * contig.copy.number,
@@ -489,8 +485,6 @@ phylogroup.heatmap <- df.figS6 %>%
   count(ezclermont.phylogroup, plasmidfinder)
 
 (heatmap_st / heatmap_phylo) + plot_layout(heights = c(7.75, 1))
-
-
 
 ###
 ### Plot Figure S7
