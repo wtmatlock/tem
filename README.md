@@ -10,6 +10,7 @@ Contained within the scripts directory is the code required to reproduce the ana
 | `buildResults.R`   | Reproduces all figure and sample statistics reported in the manuscript.         | Set the working directory to that containing `data`.         |
 | `copyNumber.sh`    | Estimates the copy number of assembly contigs.        | Formatted to be run on a Slurm scheduler.         |
 | `extractGene.py`   | Extracts a gene from a contig as a new FASTA file.         | Helper script.         | 
+| `IGRAnalysis.R`   | Reproduces the IGR analysis using Panaroo and Piggy outputs.         |       | 
 | `modelCombined.R`  | Runs the combined expression and MIC model.          |          |
 | `modelExpression.R`| Runs the expression model.         |          |
 | `modelMIC.R`       | Runs the MIC model.         |          |
