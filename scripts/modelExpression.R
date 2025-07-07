@@ -15,14 +15,16 @@ library(forcats)
 
 ### read in data
 
-df <- read_delim("~/Desktop/ecoli548/metadata/metadata.tsv", 
+df <- read_delim("path/to/supplementary_table_1.tsv", 
                  delim = "\t", escape_double = FALSE,
                  trim_ws = TRUE)
-tem1.report <- read_delim("~/Desktop/ecoli548/metadata/tem1_report.csv", 
+tem1.report <- read_delim("path/to/supplementary_table_2.csv", 
                           delim = "\t", escape_double = FALSE, 
                           trim_ws = TRUE)
-phylo <- read.tree("/Users/willmatlock/Desktop/GTR_F_I_R4.treefile")
-exp <- read_excel("~/Desktop/ecoli548/delta_CtTEM_Ct16S.xlsx")
+
+phylo <- read.tree("path/to/GTR_F_I_R4.treefile")
+
+exp <- read_excel("path/to/supplementary_table_3.xlsx")
 
 
 ### prepare phylogeny
@@ -133,8 +135,6 @@ chain.1 <- MCMCglmm(exp.scaled ~ pos1.bool*pos2.bool + contig.copy.number.scaled
                     DIC=FALSE,
                     pr=TRUE)
 
-#save.image("~/Desktop/exp.RData")
-
 set.seed(2)
 chain.2 <- MCMCglmm(exp.scaled ~ pos1.bool*pos2.bool + contig.copy.number.scaled,
                     random= ~ phylo + isolate.assembly,
@@ -147,8 +147,6 @@ chain.2 <- MCMCglmm(exp.scaled ~ pos1.bool*pos2.bool + contig.copy.number.scaled
                     thin=100,
                     DIC=FALSE,
                     pr=TRUE)
-
-#save.image("~/Desktop/exp.RData")
 
 summary(chain.1)
 plot(chain.1)
@@ -213,8 +211,6 @@ phylo.effects.long <- pivot_longer(phylo.effects, cols = everything(), names_to 
 phylo.effects.long$tip <- gsub("phylo.", "", phylo.effects.long$tip)
 phylo.effects.long$tip <- factor(phylo.effects.long$tip, levels = get_taxa_name(p))
 
-#write.csv(phylo.effects.long, '~/Desktop/exp-full-effects.csv')
-
 phylo.effects.long <- phylo.effects.long %>%
   group_by(tip) %>%
   mutate(value = value) %>%
@@ -223,8 +219,6 @@ phylo.effects.long <- phylo.effects.long %>%
   select(tip, mean, hpd) %>%
   distinct()
 phylo.effects.long <- cbind(phylo.effects.long, phylo.effects.long$hpd)
-
-#write.csv(phylo.effects.long, '~/Desktop/exp-effects.csv')
 
 p.2 <- ggplot(phylo.effects.long, aes(x = tip, y = -mean)) +
   geom_errorbar(aes(ymin=-CI_low, ymax=-CI_high), width=0) +
@@ -242,7 +236,7 @@ p.2 <- ggplot(phylo.effects.long, aes(x = tip, y = -mean)) +
   labs(fill = "Posterior mean") +
   ylab(label="")
 
-mic.phylo.effects <- read_csv("/Users/willmatlock/Desktop/reviews/revision_2/data/mic-effects_rev.csv")
+mic.phylo.effects <- read_csv("path/to/mic-effects_rev.csv")
 
 mic.phylo.effects <- mic.phylo.effects %>%
   filter(tip %in% phylo.effects.long$tip) %>%
@@ -307,8 +301,6 @@ p.4 <- ggplot(df.p.4, aes(x = isolate.assembly, y = log(mean.exp, 10), fill=coam
   ylab(label="")
 
 p.4
-
-
 
 library(cowplot)
 plot_grid(p, NULL, p.2, NULL ,p.3, NULL, p.4, align='hv', 
