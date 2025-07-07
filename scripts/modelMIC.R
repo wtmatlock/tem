@@ -15,14 +15,14 @@ library(stringr)
 ### read in data
 
 # Main metadata file
-df <- read_delim("/Users/willmatlock/Desktop/reviews/revision_2/supplementary/supplementary_table_1.tsv", 
+df <- read_delim("path/to/supplementary_table_1.tsv", 
                  delim = "\t", escape_double = FALSE, 
                  trim_ws = TRUE)
 # blaTEM-1 and linked promoter annotations
-tem1.report <- read_delim("/Users/willmatlock/Desktop/reviews/revision_2/supplementary/supplementary_table_2.csv", 
+tem1.report <- read_delim("path/to/supplementary_table_2.csv", 
                           delim = "\t", escape_double = FALSE, 
                           trim_ws = TRUE)
-phylo <- read.tree("/Users/willmatlock/Desktop/reviews/revision_2/data/GTR_F_I_R4.treefile")
+phylo <- read.tree("path/to/GTR_F_I_R4.treefile")
 
 ### prepare phylogeny
 
@@ -112,8 +112,6 @@ chain.1 <- MCMCglmm(coamox.mic ~ tem1.isolate.copy.number.scaled + tem1.isolate.
                     trunc=TRUE,
                     pr=TRUE)
 
-#save.image("~/Desktop/mic_rev.RData")
-
 set.seed(2)
 chain.2 <- MCMCglmm(coamox.mic ~ tem1.isolate.copy.number.scaled + tem1.isolate.scaled + 
                       ampc.promoter.snv + promoter.snv,
@@ -128,8 +126,6 @@ chain.2 <- MCMCglmm(coamox.mic ~ tem1.isolate.copy.number.scaled + tem1.isolate.
                     DIC=FALSE,
                     trunc=TRUE,
                     pr=TRUE)
-
-#save.image("~/Desktop/mic_rev_2.RData")
 
 summary(chain.1)
 autocorr.diag(chain.1$VCV) 
@@ -186,7 +182,10 @@ phylo.effects.long <- pivot_longer(phylo.effects, cols = everything(), names_to 
 phylo.effects.long$tip <- gsub("phylo.", "", phylo.effects.long$tip)
 phylo.effects.long$tip <- factor(phylo.effects.long$tip, levels = get_taxa_name(p))
 
-write.csv(phylo.effects.long, '~/Desktop/mic-full-effects_rev.csv')
+write.csv(phylo.effects.long, 'mic-full-effects_rev.csv')
+# used in modelExpression.R
+# "mic.phylo.effects <- read_csv("path/to/mic-effects_rev.csv")"
+# for plotting Figure 2
 
 phylo.effects.long <- phylo.effects.long %>%
   group_by(tip) %>%
@@ -197,7 +196,7 @@ phylo.effects.long <- phylo.effects.long %>%
   distinct()
 phylo.effects.long <- cbind(phylo.effects.long, phylo.effects.long$hpd)
 
-write.csv(phylo.effects.long, '~/Desktop/mic-effects_rev.csv')
+write.csv(phylo.effects.long, 'mic-effects_rev.csv')
 
 p.2 <- ggplot(phylo.effects.long, aes(x = tip, y = mean)) +
   geom_errorbar(aes(ymin=CI_low, ymax=CI_high), width=0) +
