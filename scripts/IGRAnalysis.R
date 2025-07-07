@@ -13,13 +13,13 @@ library(RColorBrewer)
 
 ### wrangle data and create main dataframe ###
 
-metadata <- read_delim("~/Desktop/reviews/igr_analysis/supplementary_table_1.tsv", 
+metadata <- read_delim("path/to/supplementary_table_1.tsv", 
                                     delim = "\t", escape_double = FALSE, 
                                     trim_ws = TRUE)
 
-igr_pa <- read_csv("~/Desktop/reviews/igr_analysis/piggy_out/IGR_presence_absence.csv")
+igr_pa <- read_csv("path/to/piggy_out/IGR_presence_absence.csv")
 
-gene_pa <- read_csv("/Users/willmatlock/Desktop/reviews/igr_analysis/panaroo_output/gene_presence_absence_roary.csv")
+gene_pa <- read_csv("path/to/panaroo_output/gene_presence_absence_roary.csv")
 
 igr_df <- igr_pa %>%
   as.data.frame() %>%                     
@@ -109,7 +109,7 @@ igr_cluster_frequencies <- combined_df %>%
 
 ### IGR cluster conservation ###
 
-igr_divergences <- read_csv("~/Desktop/reviews/igr_analysis/piggy_out/cluster_IGR_divergences.csv")
+igr_divergences <- read_csv("path/to/piggy_out/cluster_IGR_divergences.csv")
   
 divergence_df <- igr_divergences %>%
   mutate(cluster_id = gsub("_aligned", "", Gene)) %>%
@@ -271,7 +271,7 @@ igr_heatmap <- igr_pa %>%
 
 ordered_clusters <- head(colnames(igr_heatmap), -1)
 
-phylo <- read.tree("~/Desktop/reviews/igr_analysis/GTR_F_I_R4.treefile") 
+phylo <- read.tree("path/to/GTR_F_I_R4.treefile") 
 phylo <- midpoint.root(phylo)
 ordered_isolates <- phylo$tip.label 
 
@@ -325,6 +325,6 @@ heatmap_plot <- ggplot(igr_heatmap_long, aes(x = variable, y = isolate, fill = v
   )
 
 
-pdf("~/Desktop/reviews/igr_analysis/FigXa.pdf", width = 10, height = 8)  # Adjust width and height as needed
+pdf("Figure4.pdf", width = 10, height = 8)  # Adjust width and height as needed
 grid.arrange(tree_plot, heatmap_plot, ncol = 2, widths = c(1, 3))  # Adjust widths as needed
 dev.off() 
