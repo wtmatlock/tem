@@ -14,16 +14,16 @@ library(readxl)
 
 ### read in data
 
-df <- read_delim("/Users/willmatlock/Desktop/reviews/revision/supplementary/supplementary_table_1.tsv", 
+df <- read_delim("path/to/supplementary_table_1.tsv", 
                  delim = "\t", escape_double = FALSE,
                  trim_ws = TRUE)
-tem1.report <- read_delim("/Users/willmatlock/Desktop/reviews/revision/supplementary/supplementary_table_2.csv", 
+tem1.report <- read_delim("path/to/supplementary_table_2.csv", 
                           delim = "\t", escape_double = FALSE, 
                           trim_ws = TRUE)
 
-phylo <- read.tree("/Users/willmatlock/Desktop/reviews/revision/data/GTR_F_I_R4.treefile")
+phylo <- read.tree("path/to/GTR_F_I_R4.treefile")
 
-exp <- read_excel("/Users/willmatlock/Desktop/reviews/revision/supplementary/supplementary_table_3.xlsx")
+exp <- read_excel("path/to/supplementary_table_3.xlsx")
 
 ### prepare MIC data
 
@@ -162,8 +162,6 @@ chain.1 <- MCMCglmm(y ~ -1 + trait:(1 + tem1.isolate.scaled + tem1.isolate.copy.
                   DIC=FALSE,
                   pr=TRUE)
 
-#save.image("~/Desktop/combined.RData")
-
 set.seed(2)
 chain.2 <- MCMCglmm(y ~ -1 + trait:(1 + tem1.isolate.scaled + tem1.isolate.copy.number.scaled + promoter.snv),
                     random= ~ phylo + isolate.id + us(at.level(trait, "mic")):phylo,
@@ -178,8 +176,6 @@ chain.2 <- MCMCglmm(y ~ -1 + trait:(1 + tem1.isolate.scaled + tem1.isolate.copy.
                     thin=100,
                     DIC=FALSE,
                     pr=TRUE)
-
-#save.image("~/Desktop/combined.RData")
 
 summary(chain.1)
 plot(chain.1)
