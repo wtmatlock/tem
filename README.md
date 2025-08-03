@@ -39,9 +39,10 @@ Contained within the scripts directory is the code required to reproduce the ana
 |------------------|----------|----------|
 | `amrfinder_report.tsv`      | Output from NCBIAMRFinder.         | Gene hits are also included as a column in `supplementary_table_1.tsv`. |
 | `ml_tree.txt`   | *E. coli* core gene phylogeny in NEWICK format.         |         |
-| `supplementary_table_1.tsv`    | Study metadata.       |        |
-| `supplementary_table_2.tsv`   | Annotation data for *bla*<sub>TEM-1</sub> and linked promoters.      |     | 
-| `supplementary_table_3.xlsx`  | Expression data for *bla*<sub>TEM-1</sub>.        |          |
+| `supplementary_data_1.tsv`    | Study metadata.       |        |
+| `supplementary_data_2.tsv`   | Annotation data for *bla*<sub>TEM-1</sub> and linked promoters.      |     | 
+| `supplementary_data_3.xlsx`  | Expression data for *bla*<sub>TEM-1</sub>.        |          |
+| `supplementary_data_4.csv`  | NCBI accessions for short- and long-read sets and assemblies.         |          |
 
 ### Running the models
 
