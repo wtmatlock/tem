@@ -7,14 +7,14 @@ number.
 
 
 
-Files Overview
-submit_expression.slurm - SLURM job submission script for HPC execution
-run_expression_model.R - Wrapper script that handles package installation and runs the analysis
-modelExpression.R - Main R script containing all data processing and model fitting code
-expression_model_3016329.out - HPC output log file showing job execution and convergence diagnostics
+## Files Overview
+- submit_expression.slurm - SLURM job submission script for HPC execution
+- run_expression_model.R - Wrapper script that handles package installation and runs the analysis
+- modelExpression.R - Main R script containing all data processing and model fitting code
+- expression_model_3016329.out - HPC output log file showing job execution and convergence diagnostics
 
-you will need data from ./data/
-supplementary_data_1.tsv
-supplementary_data_2.tsv
-ml_tree.txt
-supplementary_data_3.xlsx
+## need data from ./data/
+- supplementary_data_1.tsv
+- supplementary_data_2.tsv
+- ml_tree.txt
+- supplementary_data_3.xlsx
