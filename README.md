@@ -1,10 +1,10 @@
-## *E. coli* phylogeny drives co-amoxiclav resistance through variable expression of *bla*<sub>TEM-1</sub>
+## *Escherichia coli* phylogeny drives co-amoxiclav resistance through variable expression of TEM-1 beta-lactamase
 
 ## Citation
 
-The repository accompanies the preprint:
+The repository accompanies the paper:
 
-Matlock, William, et al. 2024. *E. coli* phylogeny drives co-amoxiclav resistance through variable expression of *bla*<sub>TEM-1</sub>. *bioRxiv*. [10.1101/2024.08.12.607562](https://doi.org/10.1101/2024.08.12.607562).
+Matlock, W., Rodger, G., Pritchard, E. *et al.* *Escherichia coli* phylogeny drives co-amoxiclav resistance through variable expression of TEM-1 beta-lactamase. *Nat Commun* 16, 8669 (2025). [10.1038/s41467-025-63714-6](https://doi.org/10.1038/s41467-025-63714-6).
 
 Please refer to the stable archive on Zenodo:
 
